@@ -27,13 +27,16 @@ export function renderVDOM(vnode) {
     }
 }
 
-export function renderInBrowser (vnode, parent) {
+export function renderInBrowser (vnode, parent, comp) {
     let dom
     if(typeof vnode == "string") {
         dom = document.createTextNode(vnode)
+        comp && (comp.__dom = dom)
         parent.appendChild(dom)
     } else if(typeof vnode.nodeName == "string") {
         dom = document.createElement(vnode.nodeName)
+
+        comp && (comp.__dom = dom)
         setAttrs(dom, vnode.props)
         parent.appendChild(dom)
 
@@ -43,9 +46,11 @@ export function renderInBrowser (vnode, parent) {
     } else if (typeof vnode.nodeName == "function") {
         let func = vnode.nodeName
         let inst = new func(vnode.props)
-        inst.__parentDOM = parent
+
+        comp && (comp.__rendered = inst)
+
         let innerVnode = func.prototype.render.call(inst)
-        renderInBrowser(innerVnode, parent)
+        renderInBrowser(innerVnode, parent, inst)
     }
 }
 
