@@ -16,7 +16,9 @@ export default class Component {
             const vnode = this.render()
             let olddom = getDOM(this)
 
+            let startTime = new Date().getTime()
             renderInBrowser(vnode, olddom.parentNode, this, olddom)
+            console.log("render duration:", new Date().getTime() - startTime)
         }, 0)
     }
 }

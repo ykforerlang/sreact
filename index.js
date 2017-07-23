@@ -7,7 +7,6 @@ import Component from './src/Component'
 class App2 {
     constructor(props) {
         this.props = props
-        console.log('app2:', props)
     }
 
     render() {
@@ -20,7 +19,6 @@ class App2 {
 class App3 {
     constructor(props) {
         this.props = props
-        console.log('app3:', props)
     }
 
     render() {
@@ -44,7 +42,6 @@ class App4 extends Component{
             <div>
                 <App3 text={this.state.text}/>
                 <a onClick={e => {
-                    console.log("onclick")
                     this.setState({
                         text: parseInt(Math.random() * 10000) + ""
                     })
@@ -52,6 +49,33 @@ class App4 extends Component{
             </div>
         )
     }
+}
+
+class AppWithNoVDOM extends Component {
+    constructor(props) {
+        super(props)
+    }
+
+    testApp3(num) {
+        let result = []
+        for(let i = 0; i < num; i++) {
+            result.push(<App3/>)
+        }
+        return result
+    }
+
+    render() {
+        return (
+            <div>
+                <a onClick={e => {
+                    this.setState({})
+                }}>click me</a>
+                {this.testApp3(10000)}
+            </div>
+        )
+    }
+
+
 }
 
 
@@ -66,4 +90,4 @@ var app3 = renderVDOM(<App3/>)
 console.log("app3:", app3)*/
 
 console.log("enter:")
-renderInBrowser(<App4/>, document.getElementById('root'))
+renderInBrowser(<AppWithNoVDOM/>, document.getElementById('root'))

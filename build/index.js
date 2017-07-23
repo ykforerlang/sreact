@@ -54,9 +54,9 @@
 
 	var _renderVDOM = __webpack_require__(2);
 
-	var _Component2 = __webpack_require__(3);
+	var _Component3 = __webpack_require__(3);
 
-	var _Component3 = _interopRequireDefault(_Component2);
+	var _Component4 = _interopRequireDefault(_Component3);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -72,7 +72,6 @@
 	        _classCallCheck(this, App2);
 
 	        this.props = props;
-	        console.log('app2:', props);
 	    }
 
 	    _createClass(App2, [{
@@ -94,7 +93,6 @@
 	        _classCallCheck(this, App3);
 
 	        this.props = props;
-	        console.log('app3:', props);
 	    }
 
 	    _createClass(App3, [{
@@ -134,7 +132,6 @@
 	                (0, _createElement2.default)(
 	                    'a',
 	                    { onClick: function onClick(e) {
-	                            console.log("onclick");
 	                            _this2.setState({
 	                                text: parseInt(Math.random() * 10000) + ""
 	                            });
@@ -146,7 +143,48 @@
 	    }]);
 
 	    return App4;
-	}(_Component3.default);
+	}(_Component4.default);
+
+	var AppWithNoVDOM = function (_Component2) {
+	    _inherits(AppWithNoVDOM, _Component2);
+
+	    function AppWithNoVDOM(props) {
+	        _classCallCheck(this, AppWithNoVDOM);
+
+	        return _possibleConstructorReturn(this, (AppWithNoVDOM.__proto__ || Object.getPrototypeOf(AppWithNoVDOM)).call(this, props));
+	    }
+
+	    _createClass(AppWithNoVDOM, [{
+	        key: 'testApp3',
+	        value: function testApp3(num) {
+	            var result = [];
+	            for (var i = 0; i < num; i++) {
+	                result.push((0, _createElement2.default)(App3, null));
+	            }
+	            return result;
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var _this4 = this;
+
+	            return (0, _createElement2.default)(
+	                'div',
+	                null,
+	                (0, _createElement2.default)(
+	                    'a',
+	                    { onClick: function onClick(e) {
+	                            _this4.setState({});
+	                        } },
+	                    'click me'
+	                ),
+	                this.testApp3(10000)
+	            );
+	        }
+	    }]);
+
+	    return AppWithNoVDOM;
+	}(_Component4.default);
 
 	/*var app1 = renderVDOM(createElement('div', {color: 'red'}, 'hello world'))
 	console.log("app1:", app1)
@@ -159,7 +197,7 @@
 	console.log("app3:", app3)*/
 
 	console.log("enter:");
-	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(App4, null), document.getElementById('root'));
+	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(AppWithNoVDOM, null), document.getElementById('root'));
 
 /***/ },
 /* 1 */
@@ -168,7 +206,7 @@
 	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
-	  value: true
+	    value: true
 	});
 	exports.default = createElement;
 	/**
@@ -182,15 +220,25 @@
 	 * @param children
 	 */
 	function createElement(comp, props) {
-	  for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
-	    args[_key - 2] = arguments[_key];
-	  }
+	    var children = [];
 
-	  return {
-	    nodeName: comp,
-	    props: props || {},
-	    children: args || []
-	  };
+	    for (var _len = arguments.length, args = Array(_len > 2 ? _len - 2 : 0), _key = 2; _key < _len; _key++) {
+	        args[_key - 2] = arguments[_key];
+	    }
+
+	    for (var i = 0; i < args.length; i++) {
+	        if (args[i] instanceof Array) {
+	            children = children.concat(args[i]);
+	        } else {
+	            children.push(args[i]);
+	        }
+	    }
+
+	    return {
+	        nodeName: comp,
+	        props: props || {},
+	        children: children
+	    };
 	}
 
 /***/ },
@@ -311,7 +359,7 @@
 /* 3 */
 /***/ function(module, exports, __webpack_require__) {
 
-	'use strict';
+	"use strict";
 
 	Object.defineProperty(exports, "__esModule", {
 	    value: true
@@ -335,7 +383,7 @@
 	    }
 
 	    _createClass(Component, [{
-	        key: 'setState',
+	        key: "setState",
 	        value: function setState(state) {
 	            var _this = this;
 
@@ -345,7 +393,9 @@
 	                var vnode = _this.render();
 	                var olddom = getDOM(_this);
 
+	                var startTime = new Date().getTime();
 	                (0, _renderVDOM.renderInBrowser)(vnode, olddom.parentNode, _this, olddom);
+	                console.log("render duration:", new Date().getTime() - startTime);
 	            }, 0);
 	        }
 	    }]);
