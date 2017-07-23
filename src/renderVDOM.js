@@ -27,21 +27,34 @@ export function renderVDOM(vnode) {
     }
 }
 
-export function renderInBrowser (vnode, parent, comp) {
+export function renderInBrowser (vnode, parent, comp, olddom) {
     let dom
     if(typeof vnode == "string") {
         dom = document.createTextNode(vnode)
-        comp && (comp.__dom = dom)
+        comp && (comp.__rendered = dom)
         parent.appendChild(dom)
+
+        if(olddom) {
+            olddom.parentNode.replaceChild(dom, olddom)
+        } else {
+            parent.appendChild(dom)
+        }
+
+
     } else if(typeof vnode.nodeName == "string") {
         dom = document.createElement(vnode.nodeName)
 
-        comp && (comp.__dom = dom)
+        comp && (comp.__rendered = dom)
         setAttrs(dom, vnode.props)
-        parent.appendChild(dom)
+
+        if(olddom) {
+            olddom.parentNode.replaceChild(dom, olddom)
+        } else {
+            parent.appendChild(dom)
+        }
 
         for(let i = 0; i < vnode.children.length; i++) {
-            renderInBrowser(vnode.children[i], dom)
+            renderInBrowser(vnode.children[i], dom, null, null)
         }
     } else if (typeof vnode.nodeName == "function") {
         let func = vnode.nodeName
@@ -50,7 +63,7 @@ export function renderInBrowser (vnode, parent, comp) {
         comp && (comp.__rendered = inst)
 
         let innerVnode = func.prototype.render.call(inst)
-        renderInBrowser(innerVnode, parent, inst)
+        renderInBrowser(innerVnode, parent, inst, olddom)
     }
 }
 
@@ -80,7 +93,7 @@ function setAttrs(dom, props) {
 
         if(k[0] == "o" && k[1] == "n") {
             const capture = (k.indexOf("Capture") != -1)
-            dom.addEventListener(k.substring(2).toLowerCase(), capture)
+            dom.addEventListener(k.substring(2).toLowerCase(), v, capture)
             return
         }
 

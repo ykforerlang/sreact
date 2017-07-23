@@ -1,6 +1,7 @@
 import createElement from './src/createElement'
 import {renderVDOM, renderInBrowser} from './src/renderVDOM'
 
+import Component from './src/Component'
 
 ///Test app
 class App2 {
@@ -33,9 +34,9 @@ class App3 {
     }
 }
 
-class App4 {
+class App4 extends Component{
     constructor(props) {
-        this.props = props
+        super(props)
     }
 
     render() {
@@ -43,6 +44,7 @@ class App4 {
             <div>
                 <App3 text={this.state.text}/>
                 <a onClick={e => {
+                    console.log("onclick")
                     this.setState({
                         text: parseInt(Math.random() * 10000) + ""
                     })
@@ -64,4 +66,4 @@ var app3 = renderVDOM(<App3/>)
 console.log("app3:", app3)*/
 
 console.log("enter:")
-renderInBrowser(<App3 text="app3"/>, document.getElementById('root'))
+renderInBrowser(<App4/>, document.getElementById('root'))

@@ -54,7 +54,15 @@
 
 	var _renderVDOM = __webpack_require__(2);
 
+	var _Component2 = __webpack_require__(3);
+
+	var _Component3 = _interopRequireDefault(_Component2);
+
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -105,17 +113,19 @@
 	    return App3;
 	}();
 
-	var App4 = function () {
+	var App4 = function (_Component) {
+	    _inherits(App4, _Component);
+
 	    function App4(props) {
 	        _classCallCheck(this, App4);
 
-	        this.props = props;
+	        return _possibleConstructorReturn(this, (App4.__proto__ || Object.getPrototypeOf(App4)).call(this, props));
 	    }
 
 	    _createClass(App4, [{
 	        key: 'render',
 	        value: function render() {
-	            var _this = this;
+	            var _this2 = this;
 
 	            return (0, _createElement2.default)(
 	                'div',
@@ -124,7 +134,8 @@
 	                (0, _createElement2.default)(
 	                    'a',
 	                    { onClick: function onClick(e) {
-	                            _this.setState({
+	                            console.log("onclick");
+	                            _this2.setState({
 	                                text: parseInt(Math.random() * 10000) + ""
 	                            });
 	                        } },
@@ -135,7 +146,7 @@
 	    }]);
 
 	    return App4;
-	}();
+	}(_Component3.default);
 
 	/*var app1 = renderVDOM(createElement('div', {color: 'red'}, 'hello world'))
 	console.log("app1:", app1)
@@ -148,7 +159,7 @@
 	console.log("app3:", app3)*/
 
 	console.log("enter:");
-	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(App3, { text: 'app3' }), document.getElementById('root'));
+	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(App4, null), document.getElementById('root'));
 
 /***/ },
 /* 1 */
@@ -225,25 +236,41 @@
 	    }
 	}
 
-	function renderInBrowser(vnode, parent) {
+	function renderInBrowser(vnode, parent, comp, olddom) {
 	    var dom = void 0;
 	    if (typeof vnode == "string") {
 	        dom = document.createTextNode(vnode);
-	        parent.appendChild(dom);
-	    } else if (typeof vnode.nodeName == "string") {
-	        dom = document.createElement(vnode.nodeName);
-	        setAttrs(dom, vnode.props);
+	        comp && (comp.__rendered = dom);
 	        parent.appendChild(dom);
 
+	        if (olddom) {
+	            olddom.parentNode.replaceChild(dom, olddom);
+	        } else {
+	            parent.appendChild(dom);
+	        }
+	    } else if (typeof vnode.nodeName == "string") {
+	        dom = document.createElement(vnode.nodeName);
+
+	        comp && (comp.__rendered = dom);
+	        setAttrs(dom, vnode.props);
+
+	        if (olddom) {
+	            olddom.parentNode.replaceChild(dom, olddom);
+	        } else {
+	            parent.appendChild(dom);
+	        }
+
 	        for (var i = 0; i < vnode.children.length; i++) {
-	            renderInBrowser(vnode.children[i], dom);
+	            renderInBrowser(vnode.children[i], dom, null, null);
 	        }
 	    } else if (typeof vnode.nodeName == "function") {
 	        var func = vnode.nodeName;
 	        var inst = new func(vnode.props);
-	        inst.__parentDOM = parent;
+
+	        comp && (comp.__rendered = inst);
+
 	        var innerVnode = func.prototype.render.call(inst);
-	        renderInBrowser(innerVnode, parent);
+	        renderInBrowser(innerVnode, parent, inst, olddom);
 	    }
 	}
 
@@ -272,12 +299,70 @@
 
 	        if (k[0] == "o" && k[1] == "n") {
 	            var capture = k.indexOf("Capture") != -1;
-	            dom.addEventListener(k.substring(2).toLowerCase(), capture);
+	            dom.addEventListener(k.substring(2).toLowerCase(), v, capture);
 	            return;
 	        }
 
 	        dom.setAttribute(k, v);
 	    });
+	}
+
+/***/ },
+/* 3 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }(); /**
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      * Created by apple on 2017/7/20.
+	                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      */
+
+
+	var _renderVDOM = __webpack_require__(2);
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	var Component = function () {
+	    function Component(props) {
+	        _classCallCheck(this, Component);
+
+	        this.props = props;
+	        this.state = {};
+	    }
+
+	    _createClass(Component, [{
+	        key: 'setState',
+	        value: function setState(state) {
+	            var _this = this;
+
+	            this.state = state;
+
+	            setTimeout(function () {
+	                var vnode = _this.render();
+	                var olddom = getDOM(_this);
+
+	                (0, _renderVDOM.renderInBrowser)(vnode, olddom.parentNode, _this, olddom);
+	            }, 0);
+	        }
+	    }]);
+
+	    return Component;
+	}();
+
+	exports.default = Component;
+
+
+	function getDOM(comp) {
+	    var rendered = comp.__rendered;
+	    while (!rendered.nodeType) {
+	        //判断对象是否是dom
+	        rendered = rendered.__rendered;
+	    }
+	    return rendered;
 	}
 
 /***/ }

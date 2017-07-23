@@ -3,13 +3,29 @@
  */
 import { renderInBrowser } from './renderVDOM'
 
-class Component {
+export default class Component {
+    constructor(props) {
+        this.props= props
+        this.state = {}
+    }
+
     setState(state) {
         this.state = state
 
         setTimeout(() => {
             const vnode = this.render()
-            renderInBrowser(vnode, this.__parentDOM)
+            let olddom = getDOM(this)
+
+            renderInBrowser(vnode, olddom.parentNode, this, olddom)
         }, 0)
     }
+}
+
+
+function getDOM(comp) {
+    let rendered = comp.__rendered
+    while (!rendered.nodeType) { //判断对象是否是dom
+        rendered = rendered.__rendered
+    }
+    return rendered
 }
