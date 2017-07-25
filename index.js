@@ -56,26 +56,26 @@ class AppWithNoVDOM extends Component {
         super(props)
     }
 
-    testApp3(num) {
+    testApp3() {
         let result = []
-        for(let i = 0; i < num; i++) {
-            result.push(<App3/>)
+        let count = 10000
+        for(let i = 0; i < count ; i++) {
+            result.push(<App3 text={i}/>)
         }
         return result
     }
 
     render() {
         return (
-            <div>
-                <a onClick={e => {
+            <div
+                width={100}>
+                <a  onClick={e => {
                     this.setState({})
                 }}>click me</a>
-                {this.testApp3(10000)}
+                {this.testApp3()}
             </div>
         )
     }
-
-
 }
 
 
@@ -89,5 +89,7 @@ console.log("app2:", app2)
 var app3 = renderVDOM(<App3/>)
 console.log("app3:", app3)*/
 
+const startTime = new Date().getTime()
 console.log("enter:")
 renderInBrowser(<AppWithNoVDOM/>, document.getElementById('root'))
+console.log("first duration:", new Date().getTime() - startTime)

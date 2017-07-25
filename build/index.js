@@ -54,7 +54,7 @@
 
 	var _renderVDOM = __webpack_require__(2);
 
-	var _Component3 = __webpack_require__(3);
+	var _Component3 = __webpack_require__(4);
 
 	var _Component4 = _interopRequireDefault(_Component3);
 
@@ -156,10 +156,11 @@
 
 	    _createClass(AppWithNoVDOM, [{
 	        key: 'testApp3',
-	        value: function testApp3(num) {
+	        value: function testApp3() {
 	            var result = [];
-	            for (var i = 0; i < num; i++) {
-	                result.push((0, _createElement2.default)(App3, null));
+	            var count = 10000;
+	            for (var i = 0; i < count; i++) {
+	                result.push((0, _createElement2.default)(App3, { text: i }));
 	            }
 	            return result;
 	        }
@@ -170,7 +171,8 @@
 
 	            return (0, _createElement2.default)(
 	                'div',
-	                null,
+	                {
+	                    width: 100 },
 	                (0, _createElement2.default)(
 	                    'a',
 	                    { onClick: function onClick(e) {
@@ -178,7 +180,7 @@
 	                        } },
 	                    'click me'
 	                ),
-	                this.testApp3(10000)
+	                this.testApp3()
 	            );
 	        }
 	    }]);
@@ -196,8 +198,10 @@
 	var app3 = renderVDOM(<App3/>)
 	console.log("app3:", app3)*/
 
+	var startTime = new Date().getTime();
 	console.log("enter:");
 	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(AppWithNoVDOM, null), document.getElementById('root'));
+	console.log("first duration:", new Date().getTime() - startTime);
 
 /***/ },
 /* 1 */
@@ -243,7 +247,7 @@
 
 /***/ },
 /* 2 */
-/***/ function(module, exports) {
+/***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 
@@ -251,13 +255,15 @@
 	    value: true
 	});
 
-	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
+	var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; /**
+	                                                                                                                                                                                                                                                                               * Created by apple on 2017/7/16.
+	                                                                                                                                                                                                                                                                               */
+
 
 	exports.renderVDOM = renderVDOM;
 	exports.renderInBrowser = renderInBrowser;
-	/**
-	 * Created by apple on 2017/7/16.
-	 */
+
+	var _index = __webpack_require__(3);
 
 	/**
 	 *
@@ -286,30 +292,24 @@
 
 	function renderInBrowser(vnode, parent, comp, olddom) {
 	    var dom = void 0;
-	    if (typeof vnode == "string") {
-	        dom = document.createTextNode(vnode);
-	        comp && (comp.__rendered = dom);
-	        parent.appendChild(dom);
-
-	        if (olddom) {
-	            olddom.parentNode.replaceChild(dom, olddom);
+	    if (typeof vnode == "string" || typeof vnode == "number" || typeof vnode == "boolean") {
+	        if (olddom && olddom.splitText) {
+	            if (olddom.nodeValue !== vnode) {
+	                olddom.nodeValue = vnode;
+	            }
 	        } else {
-	            parent.appendChild(dom);
+	            dom = document.createTextNode(vnode);
+	            if (olddom) {
+	                olddom.parentNode.replaceChild(dom, olddom);
+	            } else {
+	                parent.appendChild(dom);
+	            }
 	        }
 	    } else if (typeof vnode.nodeName == "string") {
-	        dom = document.createElement(vnode.nodeName);
-
-	        comp && (comp.__rendered = dom);
-	        setAttrs(dom, vnode.props);
-
-	        if (olddom) {
-	            olddom.parentNode.replaceChild(dom, olddom);
+	        if (!olddom || olddom.nodeName.toLowerCase() != vnode.nodeName) {
+	            createNewDom(vnode, parent, comp, olddom);
 	        } else {
-	            parent.appendChild(dom);
-	        }
-
-	        for (var i = 0; i < vnode.children.length; i++) {
-	            renderInBrowser(vnode.children[i], dom, null, null);
+	            diffDOM(vnode, parent, comp, olddom);
 	        }
 	    } else if (typeof vnode.nodeName == "function") {
 	        var func = vnode.nodeName;
@@ -334,7 +334,7 @@
 
 	        if (k == "style") {
 	            if (typeof v == "string") {
-	                dom.style.cssText = v;
+	                dom.style.cssText = v; //IE
 	            }
 
 	            if ((typeof v === "undefined" ? "undefined" : _typeof(v)) == "object") {
@@ -355,8 +355,172 @@
 	    });
 	}
 
+	function removeAttrs(dom, props) {
+	    for (var k in props) {
+	        if (k == "className") {
+	            dom.removeAttribute("class");
+	            continue;
+	        }
+
+	        if (k == "style") {
+	            dom.style.cssText = ""; //IE
+	            continue;
+	        }
+
+	        if (k[0] == "o" && k[1] == "n") {
+	            var capture = k.indexOf("Capture") != -1;
+	            var v = props[k];
+	            dom.removeEventListener(k.substring(2).toLowerCase(), v, capture);
+	            continue;
+	        }
+
+	        dom.removeAttribute(k);
+	    }
+	}
+
+	/**
+	 *  调用者保证newProps 与 oldProps 的keys是相同的
+	 * @param dom
+	 * @param newProps
+	 * @param oldProps
+	 */
+	function diffAttrs(dom, newProps, oldProps) {
+	    for (var k in newProps) {
+	        var v = newProps[k];
+	        var ov = oldProps[k];
+	        if (v === ov) continue;
+
+	        if (k == "className") {
+	            dom.setAttribute("class", v);
+	            continue;
+	        }
+
+	        if (k == "style") {
+	            if (typeof v == "string") {
+	                dom.style.cssText = v;
+	            } else if ((typeof v === "undefined" ? "undefined" : _typeof(v)) == "object" && (typeof ov === "undefined" ? "undefined" : _typeof(ov)) == "object") {
+	                for (var vk in v) {
+	                    if (v[vk] !== ov[vk]) {
+	                        dom.style[vk] = v[vk];
+	                    }
+	                }
+
+	                for (var ovk in ov) {
+	                    if (v[ovk] === undefined) {
+	                        dom.style[ovk] = "";
+	                    }
+	                }
+	            } else {
+	                //typeof v == "object" && typeof ov == "string"
+	                dom.style = {};
+	                for (var _vk in v) {
+	                    dom.style[_vk] = v[_vk];
+	                }
+	            }
+	            continue;
+	        }
+
+	        if (k[0] == "o" && k[1] == "n") {
+	            var capture = k.indexOf("Capture") != -1;
+	            var eventKey = k.substring(2).toLowerCase();
+	            dom.removeEventListener(eventKey, ov, capture);
+	            dom.addEventListener(eventKey, v, capture);
+	            continue;
+	        }
+
+	        dom.setAttribute(k, v);
+	    }
+	}
+
+	function createNewDom(vnode, parent, comp, olddom) {
+	    var dom = document.createElement(vnode.nodeName);
+
+	    dom.__vnode = vnode;
+	    comp && (comp.__rendered = dom);
+	    setAttrs(dom, vnode.props);
+
+	    if (olddom) {
+	        olddom.parentNode.replaceChild(dom, olddom);
+	    } else {
+	        parent.appendChild(dom);
+	    }
+
+	    for (var i = 0; i < vnode.children.length; i++) {
+	        renderInBrowser(vnode.children[i], dom, null, null);
+	    }
+	}
+
+	function diffDOM(vnode, parent, comp, olddom) {
+	    var _diffObject = (0, _index.diffObject)(vnode.props, olddom.__vnode.props),
+	        onlyInLeft = _diffObject.onlyInLeft,
+	        bothIn = _diffObject.bothIn,
+	        onlyInRight = _diffObject.onlyInRight;
+
+	    setAttrs(olddom, onlyInLeft);
+	    removeAttrs(olddom, onlyInRight);
+	    diffAttrs(olddom, bothIn.left, bothIn.right);
+
+	    var olddomChild = olddom.firstChild;
+	    for (var i = 0; i < vnode.children.length; i++) {
+	        renderInBrowser(vnode.children[i], olddom, null, olddomChild);
+	        olddomChild = olddomChild && olddomChild.nextSibling;
+	    }
+
+	    while (olddomChild) {
+	        //删除多余的子节点
+	        var next = olddomChild.nextSibling;
+	        olddom.removeChild(olddomChild);
+	        olddomChild = next;
+	    }
+	    olddom.__vnode = vnode;
+	}
+
 /***/ },
 /* 3 */
+/***/ function(module, exports) {
+
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+	    value: true
+	});
+	exports.diffObject = diffObject;
+	/**
+	 * Created by apple on 2017/7/24.
+	 */
+	function diffObject(leftObj, rightObj) {
+	    var onlyInLeft = {};
+	    var bothLeft = {};
+	    var bothRight = {};
+	    var onlyInRight = {};
+
+	    for (var key in leftObj) {
+	        if (rightObj[key] === undefined) {
+	            onlyInLeft[key] = leftObj[key];
+	        } else {
+	            bothLeft[key] = leftObj[key];
+	            bothRight[key] = rightObj[key];
+	        }
+	    }
+
+	    for (var _key in rightObj) {
+	        if (leftObj[_key] === undefined) {
+	            onlyInRight[_key] = rightObj[_key];
+	        }
+	    }
+
+	    return {
+	        onlyInRight: onlyInRight,
+	        onlyInLeft: onlyInLeft,
+	        bothIn: {
+	            left: bothLeft,
+	            right: bothRight
+	        }
+	    };
+	}
+
+/***/ },
+/* 4 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -392,7 +556,6 @@
 	            setTimeout(function () {
 	                var vnode = _this.render();
 	                var olddom = getDOM(_this);
-
 	                var startTime = new Date().getTime();
 	                (0, _renderVDOM.renderInBrowser)(vnode, olddom.parentNode, _this, olddom);
 	                console.log("render duration:", new Date().getTime() - startTime);
