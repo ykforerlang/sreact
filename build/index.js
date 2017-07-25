@@ -54,9 +54,9 @@
 
 	var _renderVDOM = __webpack_require__(2);
 
-	var _Component3 = __webpack_require__(4);
+	var _Component4 = __webpack_require__(4);
 
-	var _Component4 = _interopRequireDefault(_Component3);
+	var _Component5 = _interopRequireDefault(_Component4);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -143,7 +143,7 @@
 	    }]);
 
 	    return App4;
-	}(_Component4.default);
+	}(_Component5.default);
 
 	var AppWithNoVDOM = function (_Component2) {
 	    _inherits(AppWithNoVDOM, _Component2);
@@ -186,7 +186,89 @@
 	    }]);
 
 	    return AppWithNoVDOM;
-	}(_Component4.default);
+	}(_Component5.default);
+
+	var AppWithLifecycle = function (_Component3) {
+	    _inherits(AppWithLifecycle, _Component3);
+
+	    function AppWithLifecycle(props) {
+	        _classCallCheck(this, AppWithLifecycle);
+
+	        var _this5 = _possibleConstructorReturn(this, (AppWithLifecycle.__proto__ || Object.getPrototypeOf(AppWithLifecycle)).call(this, props));
+
+	        console.log("constructor");
+	        return _this5;
+	    }
+
+	    _createClass(AppWithLifecycle, [{
+	        key: 'componentWillMount',
+	        value: function componentWillMount() {
+	            console.log("componentWillMount");
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            console.log("componentDidMount");
+	        }
+	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps() {
+	            console.log("componentWillReceiveProps");
+	        }
+	    }, {
+	        key: 'shouldComponentUpdate',
+	        value: function shouldComponentUpdate() {
+	            console.log("shouldComponentUpdate");
+	            return true;
+	        }
+	    }, {
+	        key: 'componentWillUpdate',
+	        value: function componentWillUpdate() {
+	            console.log("componentWillUpdate");
+	        }
+	    }, {
+	        key: 'componentDidUpdate',
+	        value: function componentDidUpdate() {
+	            console.log("componentDidUpdate");
+	        }
+	    }, {
+	        key: 'componentWillUnmount',
+	        value: function componentWillUnmount() {
+	            console.log("componentWillUnmount");
+	        }
+	    }, {
+	        key: 'testApp3',
+	        value: function testApp3() {
+	            var result = [];
+	            var count = 10;
+	            for (var i = 0; i < count; i++) {
+	                result.push((0, _createElement2.default)(App3, { text: i }));
+	            }
+	            return result;
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var _this6 = this;
+
+	            return (0, _createElement2.default)(
+	                'div',
+	                {
+	                    width: 100 },
+	                (0, _createElement2.default)(
+	                    'a',
+	                    { onClick: function onClick(e) {
+	                            _this6.setState({});
+	                        } },
+	                    'click me'
+	                ),
+	                this.testApp3()
+	            );
+	        }
+	    }]);
+
+	    return AppWithLifecycle;
+	}(_Component5.default);
 
 	/*var app1 = renderVDOM(createElement('div', {color: 'red'}, 'hello world'))
 	console.log("app1:", app1)
@@ -200,7 +282,7 @@
 
 	var startTime = new Date().getTime();
 	console.log("enter:");
-	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(AppWithNoVDOM, null), document.getElementById('root'));
+	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(AppWithLifecycle, null), document.getElementById('root'));
 	console.log("first duration:", new Date().getTime() - startTime);
 
 /***/ },
@@ -317,8 +399,12 @@
 
 	        comp && (comp.__rendered = inst);
 
+	        func.prototype.componentWillMount && func.prototype.componentWillMount.call(this);
+
 	        var innerVnode = func.prototype.render.call(inst);
 	        renderInBrowser(innerVnode, parent, inst, olddom);
+
+	        func.prototype.componentDidMount && func.prototype.componentDidMount.call(this);
 	    }
 	}
 

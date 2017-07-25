@@ -56,8 +56,12 @@ export function renderInBrowser (vnode, parent, comp, olddom) {
 
         comp && (comp.__rendered = inst)
 
+        func.prototype.componentWillMount && func.prototype.componentWillMount.call(this)
+
         let innerVnode = func.prototype.render.call(inst)
         renderInBrowser(innerVnode, parent, inst, olddom)
+
+        func.prototype.componentDidMount && func.prototype.componentDidMount.call(this)
     }
 }
 

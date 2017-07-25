@@ -79,6 +79,64 @@ class AppWithNoVDOM extends Component {
 }
 
 
+class AppWithLifecycle extends Component {
+    constructor(props) {
+        super(props)
+        console.log("constructor")
+    }
+
+    componentWillMount() {
+        console.log("componentWillMount")
+    }
+
+    componentDidMount() {
+        console.log("componentDidMount")
+    }
+
+    componentWillReceiveProps() {
+        console.log("componentWillReceiveProps")
+    }
+
+    shouldComponentUpdate() {
+        console.log("shouldComponentUpdate")
+        return true
+    }
+
+    componentWillUpdate() {
+        console.log("componentWillUpdate")
+    }
+
+    componentDidUpdate() {
+        console.log("componentDidUpdate")
+    }
+
+    componentWillUnmount() {
+        console.log("componentWillUnmount")
+    }
+
+    testApp3() {
+        let result = []
+        let count = 10
+        for(let i = 0; i < count ; i++) {
+            result.push(<App3 text={i}/>)
+        }
+        return result
+    }
+
+    render() {
+        return (
+            <div
+                width={100}>
+                <a  onClick={e => {
+                    this.setState({})
+                }}>click me</a>
+                {this.testApp3()}
+            </div>
+        )
+    }
+}
+
+
 /*var app1 = renderVDOM(createElement('div', {color: 'red'}, 'hello world'))
 console.log("app1:", app1)
 
@@ -91,5 +149,5 @@ console.log("app3:", app3)*/
 
 const startTime = new Date().getTime()
 console.log("enter:")
-renderInBrowser(<AppWithNoVDOM/>, document.getElementById('root'))
+renderInBrowser(<AppWithLifecycle/>, document.getElementById('root'))
 console.log("first duration:", new Date().getTime() - startTime)
