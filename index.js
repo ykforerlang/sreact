@@ -147,6 +147,14 @@ console.log("app2:", app2)
 var app3 = renderVDOM(<App3/>)
 console.log("app3:", app3)*/
 
+
+class AppWithApp  {
+    render() {
+        return <AppWithApp/>
+    }
+}
+
+
 const startTime = new Date().getTime()
 console.log("enter:")
 renderInBrowser(<AppWithLifecycle/>, document.getElementById('root'))
