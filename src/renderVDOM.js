@@ -28,36 +28,55 @@ export function renderVDOM(vnode) {
     }
 }
 
-export function renderInBrowser (vnode, parent, comp, olddom) {
+export function render(vnode, parent) {
+    parent.__childDomOrComp = []
+    renderInBrowser(vnode, parent, null, null, 0)
+}
+
+/**
+ * comp 为null的时候 就是根的时候
+ * @param vnode
+ * @param parent
+ * @param comp
+ * @param olddomOrComp
+ */
+export function renderInBrowser (vnode, parent, comp, olddomOrComp, meOrder) {
     let dom
     if(typeof vnode == "string" || typeof vnode == "number" || typeof vnode == "boolean") {
-        if(olddom && olddom.splitText) {
-            if(olddom.nodeValue !== vnode) {
-                olddom.nodeValue = vnode
+        if(olddomOrComp && olddomOrComp.splitText) {
+            if(olddomOrComp.nodeValue !== vnode) {
+                olddomOrComp.nodeValue = vnode
             }
         } else {
             dom = document.createTextNode(vnode)
-            if(olddom) {
-                olddom.parentNode.replaceChild(dom, olddom)
+            meOrder >=0 && (parent.__childDomOrComp[meOrder] = dom)
+            if(olddomOrComp) {
+                parent.replaceChild(dom, olddomOrComp)
             } else {
                 parent.appendChild(dom)
             }
         }
     } else if(typeof vnode.nodeName == "string") {
-        if(!olddom || olddom.nodeName.toLowerCase() != vnode.nodeName) {
-            createNewDom(vnode, parent, comp, olddom)
+        if(!olddomOrComp || olddomOrComp.nodeName.toLowerCase() != vnode.nodeName) {
+            createNewDom(vnode, parent, comp, olddomOrComp, meOrder)
         } else {
-            diffDOM(vnode, parent, comp, olddom)
+            diffDOM(vnode, parent, comp, olddomOrComp)
         }
 
     } else if (typeof vnode.nodeName == "function") {
         let func = vnode.nodeName
-        let inst = new func(vnode.props)
+        let inst
+        if(olddomOrComp && olddomOrComp instanceof func) {
+            inst = olddomOrComp
+        } else {
+            inst = new func(vnode.props)
+            comp && (comp.__rendered = inst)
 
-        comp && (comp.__rendered = inst)
+            meOrder >=0 && (parent.__childDomOrComp[meOrder] = inst)
+        }
 
         let innerVnode = func.prototype.render.call(inst)
-        renderInBrowser(innerVnode, parent, inst, olddom)
+        renderInBrowser(innerVnode, parent, inst, inst.__rendered, -1)
     }
 }
 
@@ -172,21 +191,23 @@ function diffAttrs(dom, newProps, oldProps) {
     }
 }
 
-function createNewDom(vnode, parent, comp, olddom) {
+function createNewDom(vnode, parent, comp, olddom, meOrder) {
     let dom = document.createElement(vnode.nodeName)
+    meOrder >=0 && (parent.__childDomOrComp[meOrder] = dom)
 
+    dom.__childDomOrComp = []
     dom.__vnode = vnode
     comp && (comp.__rendered = dom)
     setAttrs(dom, vnode.props)
 
     if(olddom) {
-        olddom.parentNode.replaceChild(dom, olddom)
+        parent.replaceChild(dom, olddom)
     } else {
         parent.appendChild(dom)
     }
 
     for(let i = 0; i < vnode.children.length; i++) {
-        renderInBrowser(vnode.children[i], dom, null, null)
+        renderInBrowser(vnode.children[i], dom, null, null, i)
     }
 }
 
@@ -197,9 +218,10 @@ function diffDOM(vnode, parent, comp, olddom) {
     diffAttrs(olddom, bothIn.left, bothIn.right)
 
 
+    let domOrComp = olddom.__childDomOrComp = olddom.__childDomOrComp.slice(0, vnode.children.length)
     let olddomChild = olddom.firstChild
     for(let i = 0; i < vnode.children.length; i++) {
-        renderInBrowser(vnode.children[i], olddom, null, olddomChild)
+        renderInBrowser(vnode.children[i], olddom, null, domOrComp[i], i)
         olddomChild = olddomChild && olddomChild.nextSibling
     }
 

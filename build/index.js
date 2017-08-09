@@ -261,6 +261,7 @@
 
 
 	exports.renderVDOM = renderVDOM;
+	exports.render = render;
 	exports.renderInBrowser = renderInBrowser;
 
 	var _index = __webpack_require__(3);
@@ -290,35 +291,54 @@
 	    }
 	}
 
-	function renderInBrowser(vnode, parent, comp, olddom) {
+	function render(vnode, parent) {
+	    parent.__childDomOrComp = [];
+	    renderInBrowser(vnode, parent, null, null, 0);
+	}
+
+	/**
+	 * comp 为null的时候 就是根的时候
+	 * @param vnode
+	 * @param parent
+	 * @param comp
+	 * @param olddomOrComp
+	 */
+	function renderInBrowser(vnode, parent, comp, olddomOrComp, meOrder) {
 	    var dom = void 0;
 	    if (typeof vnode == "string" || typeof vnode == "number" || typeof vnode == "boolean") {
-	        if (olddom && olddom.splitText) {
-	            if (olddom.nodeValue !== vnode) {
-	                olddom.nodeValue = vnode;
+	        if (olddomOrComp && olddomOrComp.splitText) {
+	            if (olddomOrComp.nodeValue !== vnode) {
+	                olddomOrComp.nodeValue = vnode;
 	            }
 	        } else {
 	            dom = document.createTextNode(vnode);
-	            if (olddom) {
-	                olddom.parentNode.replaceChild(dom, olddom);
+	            meOrder >= 0 && (parent.__childDomOrComp[meOrder] = dom);
+	            if (olddomOrComp) {
+	                parent.replaceChild(dom, olddomOrComp);
 	            } else {
 	                parent.appendChild(dom);
 	            }
 	        }
 	    } else if (typeof vnode.nodeName == "string") {
-	        if (!olddom || olddom.nodeName.toLowerCase() != vnode.nodeName) {
-	            createNewDom(vnode, parent, comp, olddom);
+	        if (!olddomOrComp || olddomOrComp.nodeName.toLowerCase() != vnode.nodeName) {
+	            createNewDom(vnode, parent, comp, olddomOrComp, meOrder);
 	        } else {
-	            diffDOM(vnode, parent, comp, olddom);
+	            diffDOM(vnode, parent, comp, olddomOrComp);
 	        }
 	    } else if (typeof vnode.nodeName == "function") {
 	        var func = vnode.nodeName;
-	        var inst = new func(vnode.props);
+	        var inst = void 0;
+	        if (olddomOrComp && olddomOrComp instanceof func) {
+	            inst = olddomOrComp;
+	        } else {
+	            inst = new func(vnode.props);
+	            comp && (comp.__rendered = inst);
 
-	        comp && (comp.__rendered = inst);
+	            meOrder >= 0 && (parent.__childDomOrComp[meOrder] = inst);
+	        }
 
 	        var innerVnode = func.prototype.render.call(inst);
-	        renderInBrowser(innerVnode, parent, inst, olddom);
+	        renderInBrowser(innerVnode, parent, inst, inst.__rendered, -1);
 	    }
 	}
 
@@ -432,21 +452,23 @@
 	    }
 	}
 
-	function createNewDom(vnode, parent, comp, olddom) {
+	function createNewDom(vnode, parent, comp, olddom, meOrder) {
 	    var dom = document.createElement(vnode.nodeName);
+	    meOrder >= 0 && (parent.__childDomOrComp[meOrder] = dom);
 
+	    dom.__childDomOrComp = [];
 	    dom.__vnode = vnode;
 	    comp && (comp.__rendered = dom);
 	    setAttrs(dom, vnode.props);
 
 	    if (olddom) {
-	        olddom.parentNode.replaceChild(dom, olddom);
+	        parent.replaceChild(dom, olddom);
 	    } else {
 	        parent.appendChild(dom);
 	    }
 
 	    for (var i = 0; i < vnode.children.length; i++) {
-	        renderInBrowser(vnode.children[i], dom, null, null);
+	        renderInBrowser(vnode.children[i], dom, null, null, i);
 	    }
 	}
 
@@ -460,9 +482,10 @@
 	    removeAttrs(olddom, onlyInRight);
 	    diffAttrs(olddom, bothIn.left, bothIn.right);
 
+	    var domOrComp = olddom.__childDomOrComp = olddom.__childDomOrComp.slice(0, vnode.children.length);
 	    var olddomChild = olddom.firstChild;
 	    for (var i = 0; i < vnode.children.length; i++) {
-	        renderInBrowser(vnode.children[i], olddom, null, olddomChild);
+	        renderInBrowser(vnode.children[i], olddom, null, domOrComp[i], i);
 	        olddomChild = olddomChild && olddomChild.nextSibling;
 	    }
 
