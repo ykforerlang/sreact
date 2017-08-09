@@ -1,5 +1,5 @@
 import createElement from './src/createElement'
-import {renderVDOM, renderInBrowser} from './src/renderVDOM'
+import {renderVDOM, renderInBrowser, render} from './src/renderVDOM'
 
 import Component from './src/Component'
 
@@ -7,7 +7,6 @@ import Component from './src/Component'
 class App2 {
     constructor(props) {
         this.props = props
-        console.log("constructor: app2")
     }
 
     render() {
@@ -59,7 +58,7 @@ class AppWithNoVDOM extends Component {
 
     testApp3() {
         let result = []
-        let count = 2
+        let count = 10000
         for(let i = 0; i < count ; i++) {
             result.push(<App3 text={i}/>)
         }
@@ -111,7 +110,19 @@ console.log("app2:", app2)
 var app3 = renderVDOM(<App3/>)
 console.log("app3:", app3)*/
 
+
+
+function TT() {
+
+}
+const s = new Date().getTime()
+for(var i = 0; i< 100000; i++) {
+    new TT()
+}
+console.log("xx:", new Date().getTime() - s)
+
+
 const startTime = new Date().getTime()
 console.log("enter:")
-renderInBrowser(<AppReuseComp/>, document.getElementById('root'))
+render(<AppWithNoVDOM/>, document.getElementById('root'))
 console.log("first duration:", new Date().getTime() - startTime)

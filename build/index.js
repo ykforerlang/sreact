@@ -72,7 +72,6 @@
 	        _classCallCheck(this, App2);
 
 	        this.props = props;
-	        console.log("constructor: app2");
 	    }
 
 	    _createClass(App2, [{
@@ -159,9 +158,9 @@
 	        key: 'testApp3',
 	        value: function testApp3() {
 	            var result = [];
-	            var count = 2;
-	            for (var i = 0; i < count; i++) {
-	                result.push((0, _createElement2.default)(App3, { text: i }));
+	            var count = 10000;
+	            for (var _i = 0; _i < count; _i++) {
+	                result.push((0, _createElement2.default)(App3, { text: _i }));
 	            }
 	            return result;
 	        }
@@ -238,9 +237,16 @@
 	var app3 = renderVDOM(<App3/>)
 	console.log("app3:", app3)*/
 
+	function TT() {}
+	var s = new Date().getTime();
+	for (var i = 0; i < 100000; i++) {
+	    new TT();
+	}
+	console.log("xx:", new Date().getTime() - s);
+
 	var startTime = new Date().getTime();
 	console.log("enter:");
-	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(AppReuseComp, null), document.getElementById('root'));
+	(0, _renderVDOM.render)((0, _createElement2.default)(AppWithNoVDOM, null), document.getElementById('root'));
 	console.log("first duration:", new Date().getTime() - startTime);
 
 /***/ },
@@ -345,7 +351,7 @@
 	 */
 	function renderInBrowser(vnode, parent, comp, olddomOrComp, meOrder) {
 	    var dom = void 0;
-	    if (typeof vnode == "string" || typeof vnode == "number" || typeof vnode == "boolean") {
+	    if (typeof vnode == "string" || typeof vnode == "number") {
 	        if (olddomOrComp && olddomOrComp.splitText) {
 	            if (olddomOrComp.nodeValue !== vnode) {
 	                olddomOrComp.nodeValue = vnode;
