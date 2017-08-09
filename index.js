@@ -7,6 +7,7 @@ import Component from './src/Component'
 class App2 {
     constructor(props) {
         this.props = props
+        console.log("constructor: app2")
     }
 
     render() {
@@ -79,6 +80,27 @@ class AppWithNoVDOM extends Component {
 }
 
 
+class AppReuseComp extends Component{
+    constructor(props) {
+        super(props)
+        this.state = {
+            obb: false
+        }
+    }
+
+    render() {
+        return <div>
+            <a  onClick={e => {
+                this.setState({
+                    obb: !this.state.obb
+                })
+            }}>click me</a>
+            {this.state.obb ? [<App2/>] : [<App2/>, <App2/>] }
+        </div>
+    }
+}
+
+
 /*var app1 = renderVDOM(createElement('div', {color: 'red'}, 'hello world'))
 console.log("app1:", app1)
 
@@ -91,5 +113,5 @@ console.log("app3:", app3)*/
 
 const startTime = new Date().getTime()
 console.log("enter:")
-renderInBrowser(<AppWithNoVDOM/>, document.getElementById('root'))
+renderInBrowser(<AppReuseComp/>, document.getElementById('root'))
 console.log("first duration:", new Date().getTime() - startTime)

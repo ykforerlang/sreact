@@ -54,9 +54,9 @@
 
 	var _renderVDOM = __webpack_require__(2);
 
-	var _Component3 = __webpack_require__(4);
+	var _Component4 = __webpack_require__(4);
 
-	var _Component4 = _interopRequireDefault(_Component3);
+	var _Component5 = _interopRequireDefault(_Component4);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -72,6 +72,7 @@
 	        _classCallCheck(this, App2);
 
 	        this.props = props;
+	        console.log("constructor: app2");
 	    }
 
 	    _createClass(App2, [{
@@ -143,7 +144,7 @@
 	    }]);
 
 	    return App4;
-	}(_Component4.default);
+	}(_Component5.default);
 
 	var AppWithNoVDOM = function (_Component2) {
 	    _inherits(AppWithNoVDOM, _Component2);
@@ -158,7 +159,7 @@
 	        key: 'testApp3',
 	        value: function testApp3() {
 	            var result = [];
-	            var count = 10000;
+	            var count = 2;
 	            for (var i = 0; i < count; i++) {
 	                result.push((0, _createElement2.default)(App3, { text: i }));
 	            }
@@ -186,7 +187,46 @@
 	    }]);
 
 	    return AppWithNoVDOM;
-	}(_Component4.default);
+	}(_Component5.default);
+
+	var AppReuseComp = function (_Component3) {
+	    _inherits(AppReuseComp, _Component3);
+
+	    function AppReuseComp(props) {
+	        _classCallCheck(this, AppReuseComp);
+
+	        var _this5 = _possibleConstructorReturn(this, (AppReuseComp.__proto__ || Object.getPrototypeOf(AppReuseComp)).call(this, props));
+
+	        _this5.state = {
+	            obb: false
+	        };
+	        return _this5;
+	    }
+
+	    _createClass(AppReuseComp, [{
+	        key: 'render',
+	        value: function render() {
+	            var _this6 = this;
+
+	            return (0, _createElement2.default)(
+	                'div',
+	                null,
+	                (0, _createElement2.default)(
+	                    'a',
+	                    { onClick: function onClick(e) {
+	                            _this6.setState({
+	                                obb: !_this6.state.obb
+	                            });
+	                        } },
+	                    'click me'
+	                ),
+	                this.state.obb ? [(0, _createElement2.default)(App2, null)] : [(0, _createElement2.default)(App2, null), (0, _createElement2.default)(App2, null)]
+	            );
+	        }
+	    }]);
+
+	    return AppReuseComp;
+	}(_Component5.default);
 
 	/*var app1 = renderVDOM(createElement('div', {color: 'red'}, 'hello world'))
 	console.log("app1:", app1)
@@ -200,7 +240,7 @@
 
 	var startTime = new Date().getTime();
 	console.log("enter:");
-	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(AppWithNoVDOM, null), document.getElementById('root'));
+	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(AppReuseComp, null), document.getElementById('root'));
 	console.log("first duration:", new Date().getTime() - startTime);
 
 /***/ },
@@ -320,7 +360,7 @@
 	            }
 	        }
 	    } else if (typeof vnode.nodeName == "string") {
-	        if (!olddomOrComp || olddomOrComp.nodeName.toLowerCase() != vnode.nodeName) {
+	        if (!olddomOrComp || olddomOrComp.nodeName != vnode.nodeName.toUpperCase()) {
 	            createNewDom(vnode, parent, comp, olddomOrComp, meOrder);
 	        } else {
 	            diffDOM(vnode, parent, comp, olddomOrComp);
@@ -580,7 +620,7 @@
 	                var vnode = _this.render();
 	                var olddom = getDOM(_this);
 	                var startTime = new Date().getTime();
-	                (0, _renderVDOM.renderInBrowser)(vnode, olddom.parentNode, _this, olddom);
+	                (0, _renderVDOM.renderInBrowser)(vnode, olddom.parentNode, _this, _this.__rendered, -1);
 	                console.log("render duration:", new Date().getTime() - startTime);
 	            }, 0);
 	        }

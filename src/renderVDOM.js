@@ -42,7 +42,7 @@ export function render(vnode, parent) {
  */
 export function renderInBrowser (vnode, parent, comp, olddomOrComp, meOrder) {
     let dom
-    if(typeof vnode == "string" || typeof vnode == "number" || typeof vnode == "boolean") {
+    if(typeof vnode == "string" || typeof vnode == "number") {
         if(olddomOrComp && olddomOrComp.splitText) {
             if(olddomOrComp.nodeValue !== vnode) {
                 olddomOrComp.nodeValue = vnode
@@ -57,7 +57,7 @@ export function renderInBrowser (vnode, parent, comp, olddomOrComp, meOrder) {
             }
         }
     } else if(typeof vnode.nodeName == "string") {
-        if(!olddomOrComp || olddomOrComp.nodeName.toLowerCase() != vnode.nodeName) {
+        if(!olddomOrComp || olddomOrComp.nodeName != vnode.nodeName.toUpperCase()) {
             createNewDom(vnode, parent, comp, olddomOrComp, meOrder)
         } else {
             diffDOM(vnode, parent, comp, olddomOrComp)
