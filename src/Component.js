@@ -10,14 +10,26 @@ export default class Component {
     }
 
     setState(state) {
-        this.state = state
-
         setTimeout(() => {
-            const vnode = this.render()
-            let olddom = getDOM(this)
-            let startTime = new Date().getTime()
-            renderInBrowser(vnode, olddom.parentNode, this, this.__rendered, -1)
-            console.log("render duration:", new Date().getTime() - startTime)
+            let shoudUpdate
+            if(this.shouldComponentUpdate) {
+                shoudUpdate = this.shouldComponentUpdate(this.props, state)
+            } else {
+                shoudUpdate = true
+            }
+
+            if(shoudUpdate) {
+                this.componentWillUpdate && this.componentWillUpdate()
+
+                this.state = state
+
+                const vnode = this.render()
+                let olddom = getDOM(this)
+                let startTime = new Date().getTime()
+                renderInBrowser(vnode, olddom.parentNode, this, this.__rendered, -1)
+                console.log("render duration:", new Date().getTime() - startTime)
+                this.componentDidUpdate && this.componentDidUpdate()
+            }
         }, 0)
     }
 }

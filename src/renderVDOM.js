@@ -67,9 +67,25 @@ export function renderInBrowser (vnode, parent, comp, olddomOrComp, meOrder) {
         let func = vnode.nodeName
         let inst
         if(olddomOrComp && olddomOrComp instanceof func) {
+            func.prototype.componentWillReceiveProps && func.prototype.componentWillReceiveProps.call(olddomOrComp, vnode.props)
+
+            let shoudUpdate
+            if(func.prototype.shouldComponentUpdate) {
+                shoudUpdate = func.prototype.shouldComponentUpdate(vnode.props, olddomOrComp.state)
+            } else {
+                shoudUpdate = true
+            }
+
+            if(shoudUpdate) {
+                func.prototype.componentWillUpdate && func.prototype.componentWillUpdate()
+            } else {
+                return // do nothing just return
+            }
+
             inst = olddomOrComp
         } else {
             inst = new func(vnode.props)
+            func.prototype.componentWillMount && func.prototype.componentWillMount.apply(inst)
             comp && (comp.__rendered = inst)
 
             meOrder >=0 && (parent.__childDomOrComp[meOrder] = inst)
@@ -77,6 +93,12 @@ export function renderInBrowser (vnode, parent, comp, olddomOrComp, meOrder) {
 
         let innerVnode = func.prototype.render.call(inst)
         renderInBrowser(innerVnode, parent, inst, inst.__rendered, -1)
+
+        if(olddomOrComp && olddomOrComp instanceof func) {
+            func.prototype.componentDidUpdate && func.prototype.componentDidUpdate.apply(inst)
+        } else {
+            func.prototype.componentDidMount && func.prototype.componentDidMount.apply(inst)
+        }
     }
 }
 

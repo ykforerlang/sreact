@@ -180,5 +180,5 @@ console.log("xx:", new Date().getTime() - s)
 
 const startTime = new Date().getTime()
 console.log("enter:")
-render(<AppWithNoVDOM/>, document.getElementById('root'))
+render(<AppWithLifecycle/>, document.getElementById('root'))
 console.log("first duration:", new Date().getTime() - startTime)

@@ -54,9 +54,9 @@
 
 	var _renderVDOM = __webpack_require__(2);
 
-	var _Component4 = __webpack_require__(4);
+	var _Component5 = __webpack_require__(4);
 
-	var _Component5 = _interopRequireDefault(_Component4);
+	var _Component6 = _interopRequireDefault(_Component5);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -143,7 +143,7 @@
 	    }]);
 
 	    return App4;
-	}(_Component5.default);
+	}(_Component6.default);
 
 	var AppWithNoVDOM = function (_Component2) {
 	    _inherits(AppWithNoVDOM, _Component2);
@@ -186,7 +186,7 @@
 	    }]);
 
 	    return AppWithNoVDOM;
-	}(_Component5.default);
+	}(_Component6.default);
 
 	var AppReuseComp = function (_Component3) {
 	    _inherits(AppReuseComp, _Component3);
@@ -225,7 +225,89 @@
 	    }]);
 
 	    return AppReuseComp;
-	}(_Component5.default);
+	}(_Component6.default);
+
+	var AppWithLifecycle = function (_Component4) {
+	    _inherits(AppWithLifecycle, _Component4);
+
+	    function AppWithLifecycle(props) {
+	        _classCallCheck(this, AppWithLifecycle);
+
+	        var _this7 = _possibleConstructorReturn(this, (AppWithLifecycle.__proto__ || Object.getPrototypeOf(AppWithLifecycle)).call(this, props));
+
+	        console.log("constructor");
+	        return _this7;
+	    }
+
+	    _createClass(AppWithLifecycle, [{
+	        key: 'componentWillMount',
+	        value: function componentWillMount() {
+	            console.log("componentWillMount");
+	        }
+	    }, {
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	            console.log("componentDidMount");
+	        }
+	    }, {
+	        key: 'componentWillReceiveProps',
+	        value: function componentWillReceiveProps() {
+	            console.log("componentWillReceiveProps");
+	        }
+	    }, {
+	        key: 'shouldComponentUpdate',
+	        value: function shouldComponentUpdate() {
+	            console.log("shouldComponentUpdate");
+	            return true;
+	        }
+	    }, {
+	        key: 'componentWillUpdate',
+	        value: function componentWillUpdate() {
+	            console.log("componentWillUpdate");
+	        }
+	    }, {
+	        key: 'componentDidUpdate',
+	        value: function componentDidUpdate() {
+	            console.log("componentDidUpdate");
+	        }
+	    }, {
+	        key: 'componentWillUnmount',
+	        value: function componentWillUnmount() {
+	            console.log("componentWillUnmount");
+	        }
+	    }, {
+	        key: 'testApp3',
+	        value: function testApp3() {
+	            var result = [];
+	            var count = 10;
+	            for (var _i2 = 0; _i2 < count; _i2++) {
+	                result.push((0, _createElement2.default)(App3, { text: _i2 }));
+	            }
+	            return result;
+	        }
+	    }, {
+	        key: 'render',
+	        value: function render() {
+	            var _this8 = this;
+
+	            return (0, _createElement2.default)(
+	                'div',
+	                {
+	                    width: 100 },
+	                (0, _createElement2.default)(
+	                    'a',
+	                    { onClick: function onClick(e) {
+	                            _this8.setState({});
+	                        } },
+	                    'click me'
+	                ),
+	                this.testApp3()
+	            );
+	        }
+	    }]);
+
+	    return AppWithLifecycle;
+	}(_Component6.default);
 
 	/*var app1 = renderVDOM(createElement('div', {color: 'red'}, 'hello world'))
 	console.log("app1:", app1)
@@ -246,7 +328,7 @@
 
 	var startTime = new Date().getTime();
 	console.log("enter:");
-	(0, _renderVDOM.render)((0, _createElement2.default)(AppWithNoVDOM, null), document.getElementById('root'));
+	(0, _renderVDOM.render)((0, _createElement2.default)(AppWithLifecycle, null), document.getElementById('root'));
 	console.log("first duration:", new Date().getTime() - startTime);
 
 /***/ },
@@ -378,6 +460,7 @@
 	            inst = olddomOrComp;
 	        } else {
 	            inst = new func(vnode.props);
+	            func.prototype.componentWillMount && func.prototype.componentWillMount.apply(inst);
 	            comp && (comp.__rendered = inst);
 
 	            meOrder >= 0 && (parent.__childDomOrComp[meOrder] = inst);
@@ -385,6 +468,12 @@
 
 	        var innerVnode = func.prototype.render.call(inst);
 	        renderInBrowser(innerVnode, parent, inst, inst.__rendered, -1);
+
+	        if (olddomOrComp && olddomOrComp instanceof func) {
+	            func.prototype.componentDidUpdate && func.prototype.componentDidUpdate.apply(inst);
+	        } else {
+	            func.prototype.componentDidMount && func.prototype.componentDidMount.apply(inst);
+	        }
 	    }
 	}
 
