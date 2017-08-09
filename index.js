@@ -1,5 +1,5 @@
 import createElement from './src/createElement'
-import {renderVDOM, renderInBrowser} from './src/renderVDOM'
+import {renderVDOM, renderInBrowser, render} from './src/renderVDOM'
 
 import Component from './src/Component'
 
@@ -78,6 +78,25 @@ class AppWithNoVDOM extends Component {
     }
 }
 
+class AppReuseComp extends Component{
+    constructor(props) {
+        super(props)
+        this.state = {
+            obb: false
+        }
+    }
+
+    render() {
+        return <div>
+            <a  onClick={e => {
+                this.setState({
+                    obb: !this.state.obb
+                })
+            }}>click me</a>
+            {this.state.obb ? [<App2/>] : [<App2/>, <App2/>] }
+        </div>
+    }
+}
 
 class AppWithLifecycle extends Component {
     constructor(props) {
@@ -148,14 +167,18 @@ var app3 = renderVDOM(<App3/>)
 console.log("app3:", app3)*/
 
 
-class AppWithApp  {
-    render() {
-        return <AppWithApp/>
-    }
+
+function TT() {
+
 }
+const s = new Date().getTime()
+for(var i = 0; i< 100000; i++) {
+    new TT()
+}
+console.log("xx:", new Date().getTime() - s)
 
 
 const startTime = new Date().getTime()
 console.log("enter:")
-renderInBrowser(<AppWithLifecycle/>, document.getElementById('root'))
+render(<AppWithNoVDOM/>, document.getElementById('root'))
 console.log("first duration:", new Date().getTime() - startTime)

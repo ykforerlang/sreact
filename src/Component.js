@@ -15,11 +15,8 @@ export default class Component {
         setTimeout(() => {
             const vnode = this.render()
             let olddom = getDOM(this)
-
-            let shouldUpdate = this.shouldComponentUpdate ? this.shouldComponentUpdate() : true
-
             let startTime = new Date().getTime()
-            shouldUpdate && renderInBrowser(vnode, olddom.parentNode, this, olddom)
+            renderInBrowser(vnode, olddom.parentNode, this, this.__rendered, -1)
             console.log("render duration:", new Date().getTime() - startTime)
         }, 0)
     }

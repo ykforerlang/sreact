@@ -159,8 +159,8 @@
 	        value: function testApp3() {
 	            var result = [];
 	            var count = 10000;
-	            for (var i = 0; i < count; i++) {
-	                result.push((0, _createElement2.default)(App3, { text: i }));
+	            for (var _i = 0; _i < count; _i++) {
+	                result.push((0, _createElement2.default)(App3, { text: _i }));
 	            }
 	            return result;
 	        }
@@ -188,86 +188,43 @@
 	    return AppWithNoVDOM;
 	}(_Component5.default);
 
-	var AppWithLifecycle = function (_Component3) {
-	    _inherits(AppWithLifecycle, _Component3);
+	var AppReuseComp = function (_Component3) {
+	    _inherits(AppReuseComp, _Component3);
 
-	    function AppWithLifecycle(props) {
-	        _classCallCheck(this, AppWithLifecycle);
+	    function AppReuseComp(props) {
+	        _classCallCheck(this, AppReuseComp);
 
-	        var _this5 = _possibleConstructorReturn(this, (AppWithLifecycle.__proto__ || Object.getPrototypeOf(AppWithLifecycle)).call(this, props));
+	        var _this5 = _possibleConstructorReturn(this, (AppReuseComp.__proto__ || Object.getPrototypeOf(AppReuseComp)).call(this, props));
 
-	        console.log("constructor");
+	        _this5.state = {
+	            obb: false
+	        };
 	        return _this5;
 	    }
 
-	    _createClass(AppWithLifecycle, [{
-	        key: 'componentWillMount',
-	        value: function componentWillMount() {
-	            console.log("componentWillMount");
-	        }
-	    }, {
-	        key: 'componentDidMount',
-	        value: function componentDidMount() {
-	            console.log("componentDidMount");
-	        }
-	    }, {
-	        key: 'componentWillReceiveProps',
-	        value: function componentWillReceiveProps() {
-	            console.log("componentWillReceiveProps");
-	        }
-	    }, {
-	        key: 'shouldComponentUpdate',
-	        value: function shouldComponentUpdate() {
-	            console.log("shouldComponentUpdate");
-	            return true;
-	        }
-	    }, {
-	        key: 'componentWillUpdate',
-	        value: function componentWillUpdate() {
-	            console.log("componentWillUpdate");
-	        }
-	    }, {
-	        key: 'componentDidUpdate',
-	        value: function componentDidUpdate() {
-	            console.log("componentDidUpdate");
-	        }
-	    }, {
-	        key: 'componentWillUnmount',
-	        value: function componentWillUnmount() {
-	            console.log("componentWillUnmount");
-	        }
-	    }, {
-	        key: 'testApp3',
-	        value: function testApp3() {
-	            var result = [];
-	            var count = 10;
-	            for (var i = 0; i < count; i++) {
-	                result.push((0, _createElement2.default)(App3, { text: i }));
-	            }
-	            return result;
-	        }
-	    }, {
+	    _createClass(AppReuseComp, [{
 	        key: 'render',
 	        value: function render() {
 	            var _this6 = this;
 
 	            return (0, _createElement2.default)(
 	                'div',
-	                {
-	                    width: 100 },
+	                null,
 	                (0, _createElement2.default)(
 	                    'a',
 	                    { onClick: function onClick(e) {
-	                            _this6.setState({});
+	                            _this6.setState({
+	                                obb: !_this6.state.obb
+	                            });
 	                        } },
 	                    'click me'
 	                ),
-	                this.testApp3()
+	                this.state.obb ? [(0, _createElement2.default)(App2, null)] : [(0, _createElement2.default)(App2, null), (0, _createElement2.default)(App2, null)]
 	            );
 	        }
 	    }]);
 
-	    return AppWithLifecycle;
+	    return AppReuseComp;
 	}(_Component5.default);
 
 	/*var app1 = renderVDOM(createElement('div', {color: 'red'}, 'hello world'))
@@ -280,9 +237,16 @@
 	var app3 = renderVDOM(<App3/>)
 	console.log("app3:", app3)*/
 
+	function TT() {}
+	var s = new Date().getTime();
+	for (var i = 0; i < 100000; i++) {
+	    new TT();
+	}
+	console.log("xx:", new Date().getTime() - s);
+
 	var startTime = new Date().getTime();
 	console.log("enter:");
-	(0, _renderVDOM.renderInBrowser)((0, _createElement2.default)(AppWithLifecycle, null), document.getElementById('root'));
+	(0, _renderVDOM.render)((0, _createElement2.default)(AppWithNoVDOM, null), document.getElementById('root'));
 	console.log("first duration:", new Date().getTime() - startTime);
 
 /***/ },
@@ -343,6 +307,7 @@
 
 
 	exports.renderVDOM = renderVDOM;
+	exports.render = render;
 	exports.renderInBrowser = renderInBrowser;
 
 	var _index = __webpack_require__(3);
@@ -372,39 +337,54 @@
 	    }
 	}
 
-	function renderInBrowser(vnode, parent, comp, olddom) {
+	function render(vnode, parent) {
+	    parent.__childDomOrComp = [];
+	    renderInBrowser(vnode, parent, null, null, 0);
+	}
+
+	/**
+	 * comp 为null的时候 就是根的时候
+	 * @param vnode
+	 * @param parent
+	 * @param comp
+	 * @param olddomOrComp
+	 */
+	function renderInBrowser(vnode, parent, comp, olddomOrComp, meOrder) {
 	    var dom = void 0;
-	    if (typeof vnode == "string" || typeof vnode == "number" || typeof vnode == "boolean") {
-	        if (olddom && olddom.splitText) {
-	            if (olddom.nodeValue !== vnode) {
-	                olddom.nodeValue = vnode;
+	    if (typeof vnode == "string" || typeof vnode == "number") {
+	        if (olddomOrComp && olddomOrComp.splitText) {
+	            if (olddomOrComp.nodeValue !== vnode) {
+	                olddomOrComp.nodeValue = vnode;
 	            }
 	        } else {
 	            dom = document.createTextNode(vnode);
-	            if (olddom) {
-	                olddom.parentNode.replaceChild(dom, olddom);
+	            meOrder >= 0 && (parent.__childDomOrComp[meOrder] = dom);
+	            if (olddomOrComp) {
+	                parent.replaceChild(dom, olddomOrComp);
 	            } else {
 	                parent.appendChild(dom);
 	            }
 	        }
 	    } else if (typeof vnode.nodeName == "string") {
-	        if (!olddom || olddom.nodeName.toLowerCase() != vnode.nodeName) {
-	            createNewDom(vnode, parent, comp, olddom);
+	        if (!olddomOrComp || olddomOrComp.nodeName != vnode.nodeName.toUpperCase()) {
+	            createNewDom(vnode, parent, comp, olddomOrComp, meOrder);
 	        } else {
-	            diffDOM(vnode, parent, comp, olddom);
+	            diffDOM(vnode, parent, comp, olddomOrComp);
 	        }
 	    } else if (typeof vnode.nodeName == "function") {
 	        var func = vnode.nodeName;
-	        var inst = new func(vnode.props);
+	        var inst = void 0;
+	        if (olddomOrComp && olddomOrComp instanceof func) {
+	            inst = olddomOrComp;
+	        } else {
+	            inst = new func(vnode.props);
+	            comp && (comp.__rendered = inst);
 
-	        comp && (comp.__rendered = inst);
-
-	        func.prototype.componentWillMount && func.prototype.componentWillMount.call(this);
+	            meOrder >= 0 && (parent.__childDomOrComp[meOrder] = inst);
+	        }
 
 	        var innerVnode = func.prototype.render.call(inst);
-	        renderInBrowser(innerVnode, parent, inst, olddom);
-
-	        func.prototype.componentDidMount && func.prototype.componentDidMount.call(this);
+	        renderInBrowser(innerVnode, parent, inst, inst.__rendered, -1);
 	    }
 	}
 
@@ -518,21 +498,23 @@
 	    }
 	}
 
-	function createNewDom(vnode, parent, comp, olddom) {
+	function createNewDom(vnode, parent, comp, olddom, meOrder) {
 	    var dom = document.createElement(vnode.nodeName);
+	    meOrder >= 0 && (parent.__childDomOrComp[meOrder] = dom);
 
+	    dom.__childDomOrComp = [];
 	    dom.__vnode = vnode;
 	    comp && (comp.__rendered = dom);
 	    setAttrs(dom, vnode.props);
 
 	    if (olddom) {
-	        olddom.parentNode.replaceChild(dom, olddom);
+	        parent.replaceChild(dom, olddom);
 	    } else {
 	        parent.appendChild(dom);
 	    }
 
 	    for (var i = 0; i < vnode.children.length; i++) {
-	        renderInBrowser(vnode.children[i], dom, null, null);
+	        renderInBrowser(vnode.children[i], dom, null, null, i);
 	    }
 	}
 
@@ -546,9 +528,10 @@
 	    removeAttrs(olddom, onlyInRight);
 	    diffAttrs(olddom, bothIn.left, bothIn.right);
 
+	    var domOrComp = olddom.__childDomOrComp = olddom.__childDomOrComp.slice(0, vnode.children.length);
 	    var olddomChild = olddom.firstChild;
 	    for (var i = 0; i < vnode.children.length; i++) {
-	        renderInBrowser(vnode.children[i], olddom, null, olddomChild);
+	        renderInBrowser(vnode.children[i], olddom, null, domOrComp[i], i);
 	        olddomChild = olddomChild && olddomChild.nextSibling;
 	    }
 
@@ -643,7 +626,7 @@
 	                var vnode = _this.render();
 	                var olddom = getDOM(_this);
 	                var startTime = new Date().getTime();
-	                (0, _renderVDOM.renderInBrowser)(vnode, olddom.parentNode, _this, olddom);
+	                (0, _renderVDOM.renderInBrowser)(vnode, olddom.parentNode, _this, _this.__rendered, -1);
 	                console.log("render duration:", new Date().getTime() - startTime);
 	            }, 0);
 	        }
