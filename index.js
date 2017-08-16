@@ -2,6 +2,8 @@ import createElement from './src/createElement'
 import {renderVDOM, renderInBrowser, render} from './src/renderVDOM'
 
 import Component from './src/Component'
+import TestUnmout from './src/test/TestUnmout'
+import TestUnmount2 from './src/test/TestUnmount2'
 
 ///Test app
 class App2 {
@@ -98,63 +100,6 @@ class AppReuseComp extends Component{
     }
 }
 
-class AppWithLifecycle extends Component {
-    constructor(props) {
-        super(props)
-        console.log("constructor")
-    }
-
-    componentWillMount() {
-        console.log("componentWillMount")
-    }
-
-    componentDidMount() {
-        console.log("componentDidMount")
-    }
-
-    componentWillReceiveProps() {
-        console.log("componentWillReceiveProps")
-    }
-
-    shouldComponentUpdate() {
-        console.log("shouldComponentUpdate")
-        return true
-    }
-
-    componentWillUpdate() {
-        console.log("componentWillUpdate")
-    }
-
-    componentDidUpdate() {
-        console.log("componentDidUpdate")
-    }
-
-    componentWillUnmount() {
-        console.log("componentWillUnmount")
-    }
-
-    testApp3() {
-        let result = []
-        let count = 10
-        for(let i = 0; i < count ; i++) {
-            result.push(<App3 text={i}/>)
-        }
-        return result
-    }
-
-    render() {
-        return (
-            <div
-                width={100}>
-                <a  onClick={e => {
-                    this.setState({})
-                }}>click me</a>
-                {this.testApp3()}
-            </div>
-        )
-    }
-}
-
 
 /*var app1 = renderVDOM(createElement('div', {color: 'red'}, 'hello world'))
 console.log("app1:", app1)
@@ -168,6 +113,117 @@ console.log("app3:", app3)*/
 
 
 
+class SubApp extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            text: props.text
+        }
+        console.log("SubApp constructor")
+    }
+
+    componentWillMount() {
+        console.log("SubApp componentWillMount")
+    }
+
+    componentDidMount() {
+        console.log("SubApp componentDidMount")
+    }
+
+    componentWillReceiveProps(nextProps) {
+        this.state.text = nextProps.text
+        console.log("SubApp componentWillReceiveProps")
+    }
+
+    shouldComponentUpdate(nextProps, nextState) {
+        console.log("SubApp shouldComponentUpdate", nextProps, nextState)
+        return true
+    }
+
+    componentWillUpdate() {
+        console.log("SubApp componentWillUpdate")
+    }
+
+    componentDidUpdate() {
+        console.log("SubApp componentDidUpdate")
+    }
+
+    componentWillUnmount() {
+        console.log("SubApp componentWillUnmount")
+    }
+
+
+
+    render() {
+        console.log("SubApp render...")
+        return (
+            <div>SubApp</div>
+        )
+    }
+}
+
+class AppWithLifecycle extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            num: 0
+        }
+        console.log("AppWithLifecycle constructor")
+    }
+
+    componentWillMount() {
+        console.log("AppWithLifecycle componentWillMount")
+    }
+
+    componentDidMount() {
+        console.log("AppWithLifecycle componentDidMount")
+    }
+
+    componentWillReceiveProps() {
+        console.log("AppWithLifecycle componentWillReceiveProps")
+    }
+
+    shouldComponentUpdate() {
+        console.log("AppWithLifecyclev shouldComponentUpdate", this.state.num)
+        return true
+    }
+
+    componentWillUpdate() {
+        console.log("AppWithLifecycle componentWillUpdate", this.state.num)
+    }
+
+    componentDidUpdate() {
+        console.log("AppWithLifecycle componentDidUpdate", this.state.num)
+    }
+
+    componentWillUnmount() {
+        console.log("AppWithLifecycle componentWillUnmount")
+    }
+
+
+
+    render() {
+        console.log("AppWithLifecycle render...")
+        return (
+            <div
+                width={100}>
+                <a  onClick={e => {
+                    this.setState({
+                        num: 10
+                    })
+                    console.log('AppWithLifecycle setState:', this.state.num)
+                }}>click me</a>
+                <SubApp text={this.state.num}/>
+            </div>
+        )
+    }
+}
+
+
+
+
+
+
 function TT() {
 
 }
@@ -177,8 +233,7 @@ for(var i = 0; i< 100000; i++) {
 }
 console.log("xx:", new Date().getTime() - s)
 
-
 const startTime = new Date().getTime()
 console.log("enter:")
-render(<AppWithLifecycle/>, document.getElementById('root'))
+render(<TestUnmount2/>, document.getElementById('root'))
 console.log("first duration:", new Date().getTime() - startTime)

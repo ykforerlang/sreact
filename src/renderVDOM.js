@@ -2,6 +2,7 @@
  * Created by apple on 2017/7/16.
  */
 import { diffObject } from './util/index'
+import Component from './Component'
 
 /**
  *
@@ -67,38 +68,56 @@ export function renderInBrowser (vnode, parent, comp, olddomOrComp, meOrder) {
         let func = vnode.nodeName
         let inst
         if(olddomOrComp && olddomOrComp instanceof func) {
-            func.prototype.componentWillReceiveProps && func.prototype.componentWillReceiveProps.call(olddomOrComp, vnode.props)
+            inst = olddomOrComp
+            inst.componentWillReceiveProps && inst.componentWillReceiveProps(vnode.props)
 
             let shoudUpdate
-            if(func.prototype.shouldComponentUpdate) {
-                shoudUpdate = func.prototype.shouldComponentUpdate(vnode.props, olddomOrComp.state)
+            if(inst.shouldComponentUpdate) {
+                shoudUpdate = inst.shouldComponentUpdate(vnode.props, olddomOrComp.state)
             } else {
                 shoudUpdate = true
             }
 
             if(shoudUpdate) {
-                func.prototype.componentWillUpdate && func.prototype.componentWillUpdate()
+                inst.componentWillUpdate && inst.componentWillUpdate()
             } else {
                 return // do nothing just return
             }
 
-            inst = olddomOrComp
+            //inst = olddomOrComp
         } else {
+            if(olddomOrComp) {
+                recoveryComp(olddomOrComp)
+            }
+
             inst = new func(vnode.props)
-            func.prototype.componentWillMount && func.prototype.componentWillMount.apply(inst)
+            inst.componentWillMount && inst.componentWillMount()
             comp && (comp.__rendered = inst)
 
             meOrder >=0 && (parent.__childDomOrComp[meOrder] = inst)
         }
 
-        let innerVnode = func.prototype.render.call(inst)
+        let innerVnode = inst.render()
         renderInBrowser(innerVnode, parent, inst, inst.__rendered, -1)
 
         if(olddomOrComp && olddomOrComp instanceof func) {
-            func.prototype.componentDidUpdate && func.prototype.componentDidUpdate.apply(inst)
+            inst.componentDidUpdate && inst.componentDidUpdate()
         } else {
-            func.prototype.componentDidMount && func.prototype.componentDidMount.apply(inst)
+            inst.componentDidMount && inst.componentDidMount()
         }
+    }
+}
+
+function recoveryComp(comp) {
+    if(comp instanceof Component) {
+        comp.componentWillUnmount && comp.componentWillUnmount()
+        recoveryComp(comp.__rendered)
+    } else if (comp.__childDomOrComp) { //dom like div
+        comp.__childDomOrComp.forEach(element => {
+            recoveryComp(element)
+        })
+    } else { //createTextNode
+        return
     }
 }
 
@@ -214,6 +233,10 @@ function diffAttrs(dom, newProps, oldProps) {
 }
 
 function createNewDom(vnode, parent, comp, olddom, meOrder) {
+    if(olddom) {
+        recoveryComp(olddom)
+    }
+
     let dom = document.createElement(vnode.nodeName)
     meOrder >=0 && (parent.__childDomOrComp[meOrder] = dom)
 
@@ -239,6 +262,9 @@ function diffDOM(vnode, parent, comp, olddom) {
     removeAttrs(olddom, onlyInRight)
     diffAttrs(olddom, bothIn.left, bothIn.right)
 
+    olddom.__childDomOrComp
+        .slice(vnode.children.length)
+        .forEach(element => recoveryComp(element))
 
     let domOrComp = olddom.__childDomOrComp = olddom.__childDomOrComp.slice(0, vnode.children.length)
     let olddomChild = olddom.firstChild

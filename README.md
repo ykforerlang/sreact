@@ -177,3 +177,97 @@ class AppWithLifecycle extends React.Component {
 
 React.render(<AppWithLifecycle/>, document.getElementById('container'));
 ```
+
+4. unmount 顺序 http://jsfiddle.net/50d782bu/
+```jsx harmony
+class SubSubApp extends Component {
+    componentWillUnmount() {
+        console.log("SubSubApp componentWillUnmount")
+    }
+    render() {
+        return (
+            <div>subsubapp</div>
+        )
+    }
+}
+class SubApp extends Component {
+    componentWillUnmount() {
+        console.log("SubApp componentWillUnmount")
+    }
+    render() {
+        return (
+            <div>
+                <SubSubApp/>
+            </div>
+        )
+    }
+}
+class TestUnmout extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            odd: false
+        }
+    }
+
+    render() {
+        return (
+            <div onClick={e => this.setState({
+                odd: !this.state.odd
+            })}>
+                {this.state.odd ? [<SubApp/>, <SubApp/>]: [<SubApp/>]}
+            </div>
+        )
+    }
+}
+```
+
+4. old Unmount new willMount  http://jsfiddle.net/t4f7fgdb/
+```jsx harmony
+class SubApp1 extends Component {
+    componentWillMount() {
+        console.log("subapp1 will mount")
+    }
+    componentWillUnmount() {
+        console.log("subapp1 will unmount")
+    }
+    render() {
+        return (
+            <div>app1</div>
+        )
+    }
+}
+class SubApp2 extends Component {
+    componentWillMount() {
+        console.log("subapp2 will mount")
+    }
+    componentWillUnmount() {
+        console.log("subapp2 will unmount")
+    }
+    render() {
+        return (
+            <div>
+                app2
+            </div>
+        )
+    }
+}
+class TestUnmout extends Component {
+    constructor(props) {
+        super(props)
+        this.state = {
+            odd: false
+        }
+    }
+
+    render() {
+        return (
+            <div onClick={e => this.setState({
+                odd: !this.state.odd
+            })}>
+                {this.state.odd ? [<SubApp1/>]: [<SubApp2/>]}
+            </div>
+        )
+    }
+}
+```
