@@ -10,6 +10,7 @@ export default class Component {
     }
 
     setState(state) {
+        console.log("setState:")
         setTimeout(() => {
             let shoudUpdate
             if(this.shouldComponentUpdate) {

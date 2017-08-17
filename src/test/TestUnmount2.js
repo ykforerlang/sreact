@@ -13,7 +13,7 @@ class SubApp1 extends Component {
     }
     render() {
         return (
-            <div>app1</div>
+            <div id={`app1${parseInt(Math.random() * 10000)}`}>app1</div>
         )
     }
 }
@@ -26,7 +26,7 @@ class SubApp2 extends Component {
     }
     render() {
         return (
-            <div>
+            <div id={`app2${parseInt(Math.random() * 10000)}`}>
                 app2
             </div>
         )
@@ -42,7 +42,7 @@ export default class TestUnmout extends Component {
 
     render() {
         return (
-            <div onClick={e => this.setState({
+            <div id={`father${parseInt(Math.random() * 10000)}`} onClick={e => this.setState({
                 odd: !this.state.odd
             })}>
                 {this.state.odd ? [<SubApp1/>]: [<SubApp2/>]}

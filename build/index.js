@@ -510,6 +510,7 @@
 	 * @param olddomOrComp
 	 */
 	function renderInBrowser(vnode, parent, comp, olddomOrComp, meOrder) {
+	    console.log("vnode:", vnode, " parent:", parent, " comp:", comp, " olddomOrComp:", olddomOrComp, " meOrder:", meOrder);
 	    var dom = void 0;
 	    if (typeof vnode == "string" || typeof vnode == "number") {
 	        if (olddomOrComp && olddomOrComp.splitText) {
@@ -517,6 +518,10 @@
 	                olddomOrComp.nodeValue = vnode;
 	            }
 	        } else {
+	            if (olddomOrComp) {
+	                recoveryComp(olddomOrComp);
+	            }
+
 	            dom = document.createTextNode(vnode);
 	            meOrder >= 0 && (parent.__childDomOrComp[meOrder] = dom);
 	            if (olddomOrComp) {
@@ -581,12 +586,13 @@
 	        recoveryComp(comp.__rendered);
 	    } else if (comp.__childDomOrComp) {
 	        //dom like div
+	        comp.parentNode.removeChild(comp);
 	        comp.__childDomOrComp.forEach(function (element) {
 	            recoveryComp(element);
 	        });
 	    } else {
-	        //createTextNode
-	        return;
+	        //TextNode
+	        comp.parentNode.removeChild(comp);
 	    }
 	}
 
@@ -741,7 +747,6 @@
 	    var domOrComp = olddom.__childDomOrComp = olddom.__childDomOrComp.slice(0, vnode.children.length);
 	    var olddomChild = olddom.firstChild;
 	    for (var i = 0; i < vnode.children.length; i++) {
-	        console.log("here:", vnode);
 	        renderInBrowser(vnode.children[i], olddom, null, domOrComp[i], i);
 	        olddomChild = olddomChild && olddomChild.nextSibling;
 	    }
@@ -831,6 +836,7 @@
 	        value: function setState(state) {
 	            var _this = this;
 
+	            console.log("setState:");
 	            setTimeout(function () {
 	                var shoudUpdate = void 0;
 	                if (_this.shouldComponentUpdate) {
@@ -1048,7 +1054,7 @@
 	        value: function render() {
 	            return (0, _createElement2.default)(
 	                'div',
-	                null,
+	                { id: 'app1' + parseInt(Math.random() * 10000) },
 	                'app1'
 	            );
 	        }
@@ -1081,7 +1087,7 @@
 	        value: function render() {
 	            return (0, _createElement2.default)(
 	                'div',
-	                null,
+	                { id: 'app2' + parseInt(Math.random() * 10000) },
 	                'app2'
 	            );
 	        }
@@ -1111,7 +1117,7 @@
 
 	            return (0, _createElement2.default)(
 	                'div',
-	                { onClick: function onClick(e) {
+	                { id: 'father' + parseInt(Math.random() * 10000), onClick: function onClick(e) {
 	                        return _this4.setState({
 	                            odd: !_this4.state.odd
 	                        });

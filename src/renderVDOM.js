@@ -42,6 +42,7 @@ export function render(vnode, parent) {
  * @param olddomOrComp
  */
 export function renderInBrowser (vnode, parent, comp, olddomOrComp, meOrder) {
+    console.log("vnode:", vnode, " parent:", parent, " comp:", comp, " olddomOrComp:", olddomOrComp, " meOrder:", meOrder)
     let dom
     if(typeof vnode == "string" || typeof vnode == "number") {
         if(olddomOrComp && olddomOrComp.splitText) {
@@ -49,6 +50,10 @@ export function renderInBrowser (vnode, parent, comp, olddomOrComp, meOrder) {
                 olddomOrComp.nodeValue = vnode
             }
         } else {
+            if(olddomOrComp) {
+                recoveryComp(olddomOrComp)
+            }
+
             dom = document.createTextNode(vnode)
             meOrder >=0 && (parent.__childDomOrComp[meOrder] = dom)
             if(olddomOrComp) {
@@ -113,11 +118,12 @@ function recoveryComp(comp) {
         comp.componentWillUnmount && comp.componentWillUnmount()
         recoveryComp(comp.__rendered)
     } else if (comp.__childDomOrComp) { //dom like div
+        comp.parentNode.removeChild(comp)
         comp.__childDomOrComp.forEach(element => {
             recoveryComp(element)
         })
-    } else { //createTextNode
-        return
+    } else { //TextNode
+        comp.parentNode.removeChild(comp)
     }
 }
 
